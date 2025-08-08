@@ -49,7 +49,7 @@ Este es un sistema de Punto de Venta (POS) basado en la web, desarrollado con Fl
 
 1. **Clona el repositorio:**
    ```bash
-   git clone <url-del-repositorio>
+   git clone https://github.com/Etiketaa/gestor-flask.git
    cd pos_flask_app
    ```
 

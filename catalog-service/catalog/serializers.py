@@ -1,5 +1,14 @@
 from rest_framework import serializers
-from .models import Category, Item
+from .models import Category, Item, CustomFieldDefinition
+
+
+class CustomFieldDefinitionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomFieldDefinition
+        fields = (
+            'id', 'name', 'field_type', 'organization_id',
+            'is_required', 'options', 'created_at',
+        )
 
 
 class CategorySerializer(serializers.ModelSerializer):

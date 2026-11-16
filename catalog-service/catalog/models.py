@@ -1,6 +1,32 @@
 from django.db import models
 
 
+class CustomFieldDefinition(models.Model):
+    """Define un campo personalizado que una organización puede usar en sus ítems."""
+    FIELD_TYPES = [
+        ('text', 'Texto'),
+        ('number', 'Número'),
+        ('select', 'Selección múltiple'),
+        ('boolean', 'Sí / No'),
+        ('date', 'Fecha'),
+    ]
+
+    name = models.CharField(max_length=100)  # ej. "Talle", "Color", "Voltaje"
+    field_type = models.CharField(max_length=20, choices=FIELD_TYPES, default='text')
+    organization_id = models.IntegerField()
+    is_required = models.BooleanField(default=False)
+    options = models.JSONField(default=list, blank=True)  # solo para select: ["S", "M", "L"]
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'custom_field_definitions'
+        unique_together = ('name', 'organization_id')
+        ordering = ['name']
+
+    def __str__(self):
+        return f"{self.name} ({self.get_field_type_display()})"
+
+
 class Category(models.Model):
     name = models.CharField(max_length=100)
     organization_id = models.IntegerField()  # sin FK para acoplamiento débil entre servicios

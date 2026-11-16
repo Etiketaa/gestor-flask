@@ -1,5 +1,30 @@
 from django.test import TestCase
-from .models import Category, Item
+from .models import Category, Item, CustomFieldDefinition
+
+
+class CustomFieldDefinitionModelTest(TestCase):
+    def test_crear_campo_personalizado(self):
+        field = CustomFieldDefinition.objects.create(
+            name='Talle',
+            field_type='select',
+            organization_id=1,
+            is_required=True,
+            options=['S', 'M', 'L'],
+        )
+        self.assertEqual(field.name, 'Talle')
+        self.assertEqual(field.field_type, 'select')
+        self.assertEqual(field.organization_id, 1)
+        self.assertTrue(field.is_required)
+        self.assertEqual(field.options, ['S', 'M', 'L'])
+
+    def test_unicidad_nombre_por_organizacion(self):
+        CustomFieldDefinition.objects.create(
+            name='Dup', field_type='text', organization_id=1,
+        )
+        with self.assertRaises(Exception):
+            CustomFieldDefinition.objects.create(
+                name='Dup', field_type='text', organization_id=1,
+            )
 
 
 class CategoryModelTest(TestCase):

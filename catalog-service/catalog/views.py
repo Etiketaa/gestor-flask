@@ -2,8 +2,41 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-from .models import Category, Item
-from .serializers import CategorySerializer, ItemSerializer
+from .models import Category, Item, CustomFieldDefinition
+from .serializers import CategorySerializer, ItemSerializer, CustomFieldDefinitionSerializer
+
+
+# ---------------- Campos personalizados ----------------
+
+class CustomFieldDefinitionListCreateView(APIView):
+    def get(self, request):
+        org_id = request.query_params.get('organization_id')
+        qs = CustomFieldDefinition.objects.all()
+        if org_id:
+            qs = qs.filter(organization_id=org_id)
+        return Response(CustomFieldDefinitionSerializer(qs, many=True).data)
+
+    def post(self, request):
+        serializer = CustomFieldDefinitionSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CustomFieldDefinitionDetailView(APIView):
+    def put(self, request, pk):
+        field = get_object_or_404(CustomFieldDefinition, pk=pk)
+        serializer = CustomFieldDefinitionSerializer(field, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        field = get_object_or_404(CustomFieldDefinition, pk=pk)
+        field.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 # ---------------- Categorías ----------------

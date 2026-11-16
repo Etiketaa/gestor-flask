@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor SaaS — Control de Stock</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Pantalla: No autenticado -->
+        <div id="view-auth" class="view card">
+            <div class="card-header">
+                <h1>Gestor SaaS</h1>
+                <p>Control de stock y ventas para cualquier rubro</p>
+            </div>
+            <div class="tabs">
+                <button class="tab active" data-tab="login">Iniciar sesión</button>
+                <button class="tab" data-tab="register">Registrar organización</button>
+            </div>
+
+            <div id="panel-login">
+                <form id="form-login">
+                    <div class="form-group">
+                        <label>Organización (slug)</label>
+                        <input type="text" name="organization_slug" placeholder="ej. ferreteria-el-clavo" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Usuario</label>
+                        <input type="text" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Contraseña</label>
+                        <input type="password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Ingresar</button>
+                </form>
+                <p id="msg-login" class="msg error"></p>
+            </div>
+
+            <div id="panel-register" style="display:none;">
+                <form id="form-register">
+                    <div class="form-group">
+                        <label>Nombre de la organización</label>
+                        <input type="text" name="organization_name" placeholder="ej. Ferretería El Clavo" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Slug de la organización</label>
+                        <input type="text" name="organization_slug" placeholder="ej. ferreteria-el-clavo" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Usuario administrador</label>
+                        <input type="text" name="username" placeholder="ej. admin" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Contraseña</label>
+                        <input type="password" name="password" required minlength="6">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Crear organización</button>
+                </form>
+                <p id="msg-register" class="msg error"></p>
+            </div>
+        </div>
+
+        <!-- Pantalla: Autenticado -->
+        <div id="view-app" class="view" style="display:none;">
+            <nav class="navbar">
+                <div class="navbar-brand">Gestor <span id="org-name"></span></div>
+                <div class="navbar-user">
+                    <span id="user-info"></span>
+                    <button id="btn-logout" class="btn btn-outline">Cerrar sesión</button>
+                </div>
+            </nav>
+
+            <div class="container">
+                <h2>Panel Principal</h2>
+                <p class="subtitle">Bienvenido al sistema de control de stock y ventas.</p>
+
+                <div class="grid grid-2">
+                    <div class="card">
+                        <h3>Ítems / Productos</h3>
+                        <div class="toolbar">
+                            <input type="text" id="search-items" placeholder="Buscar nombre o SKU...">
+                            <button id="btn-new-item" class="btn btn-primary">Nuevo ítem</button>
+                        </div>
+                        <table class="table">
+                            <thead>
+                                <tr><th>SKU</th><th>Nombre</th><th>Precio</th><th>Stock</th><th>Acciones</th></tr>
+                            </thead>
+                            <tbody id="tbody-items"></tbody>
+                        </table>
+                        <div id="empty-items" class="empty" style="display:none;">No hay ítems.</div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Registro de Venta Rápida</h3>
+                        <form id="form-sale">
+                            <div class="form-group">
+                                <label>ID del ítem</label>
+                                <input type="number" name="item_id" required min="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Cantidad</label>
+                                <input type="number" name="quantity" required min="1" value="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Precio unitario</label>
+                                <input type="number" step="0.01" name="price" required min="0">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Registrar venta</button>
+                        </form>
+                        <p id="msg-sale" class="msg"></p>
+                    </div>
+                </div>
+
+                <div class="card" style="grid-column: 1 / -1;">
+                    <h3>Últimas ventas</h3>
+                    <table class="table">
+                        <thead>
+                            <tr><th>#</th><th>Fecha</th><th>Total</th><th>Usuario</th></tr>
+                        </thead>
+                        <tbody id="tbody-sales"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: nuevo ítem -->
+        <div id="modal-item" class="modal" style="display:none;">
+            <div class="modal-content card">
+                <div class="modal-header">
+                    <h3>Nuevo ítem</h3>
+                    <button id="close-modal" class="btn-close">×</button>
+                </div>
+                <form id="form-item">
+                    <div class="form-group">
+                        <label>SKU</label>
+                        <input type="text" name="sku" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nombre</label>
+                        <input type="text" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Precio</label>
+                        <input type="number" step="0.01" name="price" required min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Cantidad</label>
+                        <input type="number" name="quantity" required min="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Unidad</label>
+                        <input type="text" name="unit" value="unidad">
+                    </div>
+                    <div class="form-group">
+                        <label>Categoría ID (opcional)</label>
+                        <input type="number" name="category_id" min="1">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </form>
+                <p id="msg-item" class="msg error"></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

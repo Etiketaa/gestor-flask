@@ -1,7 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.contrib.auth import login, logout
+from django.contrib.auth import logout
+from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import (
     OrganizationRegisterSerializer,
     LoginSerializer,
@@ -29,15 +30,23 @@ class RegisterOrganizationView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+def _tokens_for_user(user):
+    refresh = RefreshToken.for_user(user)
+    return {
+        'access': str(refresh.access_token),
+        'refresh': str(refresh),
+    }
+
+
 class LoginView(APIView):
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.validated_data['user']
-            login(request, user)
             return Response(
                 {
                     'message': 'Inicio de sesión exitoso',
+                    'tokens': _tokens_for_user(user),
                     'user': UserSerializer(user).data,
                 }
             )
@@ -46,6 +55,13 @@ class LoginView(APIView):
 
 class LogoutView(APIView):
     def post(self, request):
+        try:
+            refresh_token = request.data.get('refresh')
+            if refresh_token:
+                token = RefreshToken(refresh_token)
+                token.blacklist()
+        except Exception:
+            pass
         logout(request)
         return Response({'message': 'Sesión cerrada'})
 

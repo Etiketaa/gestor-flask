@@ -18,6 +18,7 @@ class RegisterOrganizationView(APIView):
             return Response(
                 {
                     'message': 'Organización y usuario creados',
+                    'tokens': _tokens_for_user(result['user']),
                     'organization': {
                         'id': result['organization'].id,
                         'name': result['organization'].name,

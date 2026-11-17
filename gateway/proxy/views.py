@@ -29,6 +29,8 @@ def _forward(request, service_url, path):
     headers = {}
     if request.content_type:
         headers['Content-Type'] = request.content_type
+    if 'Authorization' in request.headers:
+        headers['Authorization'] = request.headers['Authorization']
 
     cookies = request.COOKIES
 

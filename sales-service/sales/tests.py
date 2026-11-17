@@ -1,5 +1,6 @@
 from django.test import TestCase
-from .models import Sale, SaleItem, InventoryMovement
+from django.utils import timezone
+from .models import Sale, SaleItem, InventoryMovement, CashRegister, CashMovement, Quote, QuoteItem
 
 
 class SaleModelTest(TestCase):
@@ -38,3 +39,50 @@ class InventoryMovementModelTest(TestCase):
         self.assertEqual(movement.quantity_change, -2)
         self.assertEqual(movement.reason, 'Venta')
         self.assertIsNotNone(movement.movement_date)
+
+
+class CashRegisterModelTest(TestCase):
+    def test_abrir_caja(self):
+        caja = CashRegister.objects.create(
+            organization_id=1,
+            opened_by=1,
+            opening_amount=5000,
+            status=CashRegister.STATUS_OPEN,
+        )
+        self.assertEqual(caja.status, 'open')
+        self.assertEqual(caja.opening_amount, 5000)
+        self.assertIsNotNone(caja.opened_at)
+
+    def test_cerrar_caja(self):
+        caja = CashRegister.objects.create(
+            organization_id=1,
+            opened_by=1,
+            opening_amount=5000,
+            status=CashRegister.STATUS_OPEN,
+        )
+        caja.closed_at = timezone.now()
+        caja.closing_amount = 6000
+        caja.status = CashRegister.STATUS_CLOSED
+        caja.save()
+        self.assertEqual(caja.status, 'closed')
+        self.assertEqual(caja.closing_amount, 6000)
+        self.assertIsNotNone(caja.closed_at)
+
+
+class CashMovementModelTest(TestCase):
+    def test_crear_movimiento_caja(self):
+        caja = CashRegister.objects.create(
+            organization_id=1,
+            opened_by=1,
+            opening_amount=5000,
+            status=CashRegister.STATUS_OPEN,
+        )
+        movimiento = CashMovement.objects.create(
+            cash_register=caja,
+            type=CashMovement.TYPE_INCOME,
+            amount=1000,
+            reason='Venta',
+        )
+        self.assertEqual(movimiento.amount, 1000)
+        self.assertEqual(movimiento.type, 'income')
+        self.assertEqual(movimiento.cash_register, caja)

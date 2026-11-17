@@ -2,6 +2,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import logout
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import (
     OrganizationRegisterSerializer,
@@ -10,6 +12,7 @@ from .serializers import (
 )
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class RegisterOrganizationView(APIView):
     def post(self, request):
         serializer = OrganizationRegisterSerializer(data=request.data)
@@ -39,6 +42,7 @@ def _tokens_for_user(user):
     }
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class LoginView(APIView):
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
@@ -54,6 +58,7 @@ class LoginView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class LogoutView(APIView):
     def post(self, request):
         try:
@@ -67,6 +72,7 @@ class LogoutView(APIView):
         return Response({'message': 'Sesión cerrada'})
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class MeView(APIView):
     def get(self, request):
         if not request.user.is_authenticated:

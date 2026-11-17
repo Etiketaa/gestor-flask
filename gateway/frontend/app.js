@@ -1,9 +1,10 @@
 const API = ''; // misma origen: el gateway sirve el frontend y la API
 
-let token = null;
+let token = localStorage.getItem('token') || null;
 
 async function api(path, opts = {}) {
     const headers = { 'Content-Type': 'application/json', ...opts.headers };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
     const res = await fetch(`${API}/api${path}`, {
         ...opts,
         headers,
@@ -36,7 +37,9 @@ document.getElementById('form-login').addEventListener('submit', async (e) => {
     const fd = new FormData(e.target);
     const body = Object.fromEntries(fd);
     try {
-        await api('/auth/login', { method: 'POST', body: JSON.stringify(body) });
+        const data = await api('/auth/login', { method: 'POST', body: JSON.stringify(body) });
+        token = data.tokens.access;
+        localStorage.setItem('token', token);
         loadApp();
     } catch (err) {
         document.getElementById('msg-login').textContent = err.message;
@@ -58,12 +61,19 @@ document.getElementById('form-register').addEventListener('submit', async (e) =>
 
 document.getElementById('btn-logout').addEventListener('click', async () => {
     try { await api('/auth/logout', { method: 'POST' }); } catch {}
+    token = null;
+    localStorage.removeItem('token');
     viewApp.style.display = 'none';
     viewAuth.style.display = 'block';
 });
 
 // ---------- App ----------
 async function loadApp() {
+    if (!token) {
+        viewAuth.style.display = 'block';
+        viewApp.style.display = 'none';
+        return;
+    }
     try {
         const me = await api('/auth/me');
         document.getElementById('org-name').textContent = me.user.organization;
